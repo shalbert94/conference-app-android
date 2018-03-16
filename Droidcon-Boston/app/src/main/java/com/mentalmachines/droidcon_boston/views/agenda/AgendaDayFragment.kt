@@ -167,7 +167,7 @@ class AgendaDayFragment : Fragment(), FlexibleAdapter.OnItemClickListener {
             val agendaDetailFragment = AgendaDetailFragment()
             agendaDetailFragment.arguments = arguments
 
-            val fragmentManager = activity?.fragmentManager
+            val fragmentManager = activity?.supportFragmentManager
             fragmentManager?.beginTransaction()
                     ?.add(R.id.fragment_container, agendaDetailFragment)
                     ?.addToBackStack(null)
