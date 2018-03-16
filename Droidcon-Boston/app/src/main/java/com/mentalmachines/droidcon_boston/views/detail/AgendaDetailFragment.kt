@@ -1,6 +1,7 @@
 package com.mentalmachines.droidcon_boston.views.detail
 
-import android.app.Fragment
+import android.support.v4.app.Fragment
+import android.content.Context
 import android.content.res.ColorStateList
 import android.os.Bundle
 import android.support.design.widget.Snackbar
@@ -26,6 +27,7 @@ import com.mentalmachines.droidcon_boston.firebase.FirebaseHelper
 import com.mentalmachines.droidcon_boston.utils.ServiceLocator.Companion.gson
 import com.mentalmachines.droidcon_boston.utils.NotificationUtils
 import com.mentalmachines.droidcon_boston.utils.getHtmlFormattedSpanned
+import com.mentalmachines.droidcon_boston.views.agenda.AgendaDayFragment
 import com.mentalmachines.droidcon_boston.views.transform.CircleTransform
 import kotlinx.android.synthetic.main.agenda_detail_fragment.agendaDetailView
 import kotlinx.android.synthetic.main.agenda_detail_fragment.fab_agenda_detail_bookmark
@@ -47,6 +49,12 @@ class AgendaDetailFragment : Fragment() {
     private val userAgendaRepo: UserAgendaRepo
         get() = UserAgendaRepo.getInstance(fab_agenda_detail_bookmark.context)
 
+    private lateinit var bookmarkNotification : BookmarkNotification
+    /* Used for communicating with AgendaDayFragment to notify its agenda_recycler's adapter that a talk was bookmarked */
+    interface BookmarkNotification {
+        fun bookmarkStateChanged ()
+    }
+
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
@@ -54,12 +62,17 @@ class AgendaDetailFragment : Fragment() {
         return inflater.inflate(R.layout.agenda_detail_fragment, container, false)
     }
 
-    override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val itemData = gson.fromJson(arguments.getString(Schedule.SCHEDULE_ITEM_ROW), ScheduleRow::class.java)
+        val itemData = gson.fromJson(arguments?.getString(Schedule.SCHEDULE_ITEM_ROW), ScheduleRow::class.java)
         fetchDataFromFirebase(itemData)
         populateView(itemData)
+    }
+
+    override fun onAttach(context: Context?) {
+        super.onAttach(context)
+        bookmarkNotification = context as BookmarkNotification
     }
 
     private fun populateView(itemData: ScheduleRow) {
@@ -85,6 +98,7 @@ class AgendaDetailFragment : Fragment() {
                     Snackbar.LENGTH_SHORT).show()
 
             showBookmarkStatus(scheduleDetail)
+            bookmarkNotification.bookmarkStateChanged()
         })
 
         populateSpeakersInformation(itemData)
@@ -161,7 +175,7 @@ class AgendaDetailFragment : Fragment() {
 
                 Glide.with(this)
                         .load(itemData.photoUrlMap[it])
-                        .transform(CircleTransform(activity.applicationContext))
+                        .transform(CircleTransform(requireContext().applicationContext))
                         .placeholder(R.drawable.emo_im_cool)
                         .crossFade()
                         .into(tempImg)
@@ -183,8 +197,9 @@ class AgendaDetailFragment : Fragment() {
     private fun showBookmarkStatus(scheduleDetail: ScheduleDetail) {
         val userAgendaRepo = userAgendaRepo
         fab_agenda_detail_bookmark.backgroundTintList = if (userAgendaRepo.isSessionBookmarked(scheduleDetail.id))
-            ColorStateList.valueOf(ContextCompat.getColor(activity, R.color.colorAccent))
+            ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.colorAccent))
         else
-            ColorStateList.valueOf(ContextCompat.getColor(activity, R.color.colorLightGray))
+            ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.colorLightGray))
     }
+
 }
