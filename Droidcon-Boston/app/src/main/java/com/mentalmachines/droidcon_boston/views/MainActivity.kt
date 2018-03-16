@@ -5,18 +5,25 @@ import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.app.AppCompatActivity
+import android.util.Log
 import android.view.MenuItem
 import com.mentalmachines.droidcon_boston.R
+import com.mentalmachines.droidcon_boston.views.agenda.AgendaDayFragment
 import com.mentalmachines.droidcon_boston.views.agenda.AgendaFragment
+import com.mentalmachines.droidcon_boston.views.detail.AgendaDetailFragment.BookmarkNotification
 import com.mentalmachines.droidcon_boston.views.social.SocialFragment
 import com.mentalmachines.droidcon_boston.views.speaker.SpeakerFragment
 import com.mentalmachines.droidcon_boston.views.volunteer.VolunteerFragment
 import kotlinx.android.synthetic.main.main_activity.drawer_layout
 import kotlinx.android.synthetic.main.main_activity.navView
 import kotlinx.android.synthetic.main.main_activity.toolbar
+import android.support.v4.app.FragmentPagerAdapter
+import com.mentalmachines.droidcon_boston.views.agenda.AgendaDayPagerAdapter
+import kotlinx.android.synthetic.main.agenda_day_fragment.agenda_recycler
+import kotlinx.android.synthetic.main.agenda_fragment.viewpager
 
-class MainActivity : AppCompatActivity() {
 
+class MainActivity : AppCompatActivity(), BookmarkNotification {
     private lateinit var actionBarDrawerToggle: ActionBarDrawerToggle
 
     private var lastFragmentTitleSelected: String? = null
@@ -31,6 +38,18 @@ class MainActivity : AppCompatActivity() {
         navView.setCheckedItem(R.id.nav_agenda)
     }
 
+    /*Callback from AgendaDetailFragment bookmark fab*/
+    override fun bookmarkStateChanged() {
+        var agendaFragmentTag : String = resources.getString(R.string.str_agenda)
+        val agendaFragment = supportFragmentManager.findFragmentByTag(agendaFragmentTag)
+
+        if (agendaFragment is AgendaFragment) {
+            val agendaDayFragment = agendaFragment.getCurrentregisteredFragment()
+            if (agendaDayFragment is AgendaDayFragment) {
+                agendaDayFragment.updateList()
+            }
+        }
+    }
 
     private fun initNavDrawerToggle() {
 
@@ -103,7 +122,6 @@ class MainActivity : AppCompatActivity() {
 
         // Get the fragment by tag
         var fragment: Fragment? = supportFragmentManager.findFragmentByTag(title)
-
         if (fragment == null) {
             // Initialize the fragment based on tag
             when (title) {
