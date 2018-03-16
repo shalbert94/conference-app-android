@@ -2,6 +2,9 @@ package com.mentalmachines.droidcon_boston.views.agenda
 
 import android.os.Bundle
 import android.support.v4.app.Fragment
+import android.support.v4.app.FragmentManager
+import android.support.v4.view.ViewPager
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,6 +14,8 @@ import kotlinx.android.synthetic.main.agenda_fragment.viewpager
 import java.util.Calendar
 
 class AgendaFragment : Fragment() {
+
+    private lateinit var adapter: AgendaDayPagerAdapter
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
@@ -41,12 +46,18 @@ class AgendaFragment : Fragment() {
                 viewpager.currentItem = 1
             }
         }
+        adapter = viewpager.adapter as AgendaDayPagerAdapter
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putInt(TAB_POSITION, tablayout.selectedTabPosition)
     }
+
+    public fun getCurrentregisteredFragment() : Fragment {
+                return adapter.getRegisteredFragment(viewpager.currentItem)
+    }
+
 
     companion object {
 
